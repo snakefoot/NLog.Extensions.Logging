@@ -48,6 +48,7 @@ namespace NLog.Extensions.Logging
 
             using (var provider = new NLogLoggerProvider(options))
             {
+                
                 factory.AddProvider(provider);
             }
             return factory;
