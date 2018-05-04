@@ -38,7 +38,7 @@ namespace NLog.Extensions.Logging
             }
 
             LogEventInfo eventInfo = null;
-            var messageParameters = NLogMessageParameterList.CreateIfNeeded(_options.CaptureMessageTemplates ? state as IReadOnlyList<KeyValuePair<string, object>> : null);
+            var messageParameters = NLogMessageParameterList.TryParse(_options.CaptureMessageTemplates ? state as IReadOnlyList<KeyValuePair<string, object>> : null);
             if (messageParameters?.OriginalMessage != null && (messageParameters.CustomCaptureTypes || (_options.ParseMessageTemplates && messageParameters.Count > 0)))
             {
                 eventInfo = TryParseLogEventInfo(nLogLogLevel, messageParameters);
