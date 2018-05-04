@@ -37,18 +37,7 @@ namespace NLog.Extensions.Logging
                 throw new ArgumentNullException(nameof(formatter));
             }
 
-            LogEventInfo eventInfo = null;
-            var messageParameters = NLogMessageParameterList.TryParse(_options.CaptureMessageTemplates ? state as IReadOnlyList<KeyValuePair<string, object>> : null);
-            if (messageParameters?.OriginalMessage != null && (messageParameters.HasMessageTemplateCapture || (_options.ParseMessageTemplates && messageParameters.Count > 0)))
-            {
-                eventInfo = TryParseLogEventInfo(nLogLogLevel, messageParameters);
-            }
-
-            if (eventInfo == null)
-            {
-                var message = formatter(state, exception);
-                eventInfo = CreateLogEventInfo(nLogLogLevel, message, messageParameters);
-            }
+            var eventInfo = CreateEventInfo(state, exception, formatter, nLogLogLevel, out var messageParameters);
 
             if (exception != null)
             {
@@ -63,6 +52,34 @@ namespace NLog.Extensions.Logging
             }
 
             _logger.Log(typeof(Microsoft.Extensions.Logging.ILogger), eventInfo);
+        }
+
+        /// <summary>
+        /// Create log event
+        /// </summary>
+        /// <typeparam name="TState"></typeparam>
+        /// <param name="state">state</param>
+        /// <param name="exception">Option exception</param>
+        /// <param name="formatter">Message formatter</param>
+        /// <param name="logLevel">NLog's loglevel</param>
+        /// <param name="messageParameters">message parameters, could be null</param>
+        /// <returns>never null</returns>
+        private LogEventInfo CreateEventInfo<TState>(TState state, Exception exception, Func<TState, Exception, string> formatter, LogLevel logLevel, out NLogMessageParameterList messageParameters)
+        {
+            LogEventInfo eventInfo = null;
+            messageParameters = NLogMessageParameterList.TryParse(_options.CaptureMessageTemplates ? state as IReadOnlyList<KeyValuePair<string, object>> : null);
+            if (messageParameters?.OriginalMessage != null && (messageParameters.HasMessageTemplateCapture || (_options.ParseMessageTemplates && messageParameters.Count > 0)))
+            {
+                eventInfo = TryParseLogEventInfo(logLevel, messageParameters);
+            }
+
+            if (eventInfo == null)
+            {
+                var message = formatter(state, exception);
+                eventInfo = CreateLogEventInfo(logLevel, message, messageParameters);
+            }
+
+            return eventInfo;
         }
 
 
@@ -112,7 +129,7 @@ namespace NLog.Extensions.Logging
         /// <remarks>
         /// Cannot trust the parameters received from Microsoft Extension Logging, as extra parameters can be injected
         /// </remarks>
-        private object[] CreateLogEventInfoParameters(NLogMessageParameterList messageParameters, NLog.MessageTemplates.MessageTemplateParameters messagetTemplateParameters)
+        private static object[] CreateLogEventInfoParameters(NLogMessageParameterList messageParameters, NLog.MessageTemplates.MessageTemplateParameters messagetTemplateParameters)
         {
             if (!AllParameterCorrectlyPositionalMapped(messageParameters, messagetTemplateParameters))
             {
