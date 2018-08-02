@@ -73,6 +73,10 @@ namespace NLog.Extensions.Logging
             return eventInfo;
         }
 
+        /// <summary>
+        /// Create message parameter list if needed
+        /// </summary>
+        /// <returns>null if not needed</returns>
         private NLogMessageParameterList CreateMessageParameters(IReadOnlyList<KeyValuePair<string, object>> messageProperties)
         {
             return (messageProperties != null && _options.CaptureMessageTemplates)
@@ -80,6 +84,10 @@ namespace NLog.Extensions.Logging
                 : null;
         }
 
+        /// <summary>
+        /// Create message properties list if needed
+        /// </summary>
+        /// <returns>null if not needed</returns>
         private IReadOnlyList<KeyValuePair<string, object>> CreateMessageProperties<TState>(TState state)
         {
             return (_options.CaptureMessageTemplates || _options.CaptureMessageProperties)
