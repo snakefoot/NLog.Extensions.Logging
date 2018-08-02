@@ -51,13 +51,8 @@ namespace NLog.Extensions.Logging
 
         private LogEventInfo CreateLogEventInfo<TState>(LogLevel nLogLogLevel, TState state, Exception exception, Func<TState, Exception, string> formatter)
         {
-            var messageProperties = (_options.CaptureMessageTemplates || _options.CaptureMessageProperties)
-                ? state as IReadOnlyList<KeyValuePair<string, object>>
-                : null;
-
-            var messageParameters = (messageProperties != null && _options.CaptureMessageTemplates)
-                ? NLogMessageParameterList.TryParse(messageProperties)
-                : null;
+            IReadOnlyList<KeyValuePair<string, object>> messageProperties = CreateMessageProperties(state);
+            NLogMessageParameterList messageParameters = CreateMessageParameters(messageProperties);
 
             string formattedMesage = null;
             LogEventInfo eventInfo =
@@ -76,6 +71,20 @@ namespace NLog.Extensions.Logging
             }
 
             return eventInfo;
+        }
+
+        private NLogMessageParameterList CreateMessageParameters(IReadOnlyList<KeyValuePair<string, object>> messageProperties)
+        {
+            return (messageProperties != null && _options.CaptureMessageTemplates)
+                ? NLogMessageParameterList.TryParse(messageProperties)
+                : null;
+        }
+
+        private IReadOnlyList<KeyValuePair<string, object>> CreateMessageProperties<TState>(TState state)
+        {
+            return (_options.CaptureMessageTemplates || _options.CaptureMessageProperties)
+                ? state as IReadOnlyList<KeyValuePair<string, object>>
+                : null;
         }
 
         /// <summary>
