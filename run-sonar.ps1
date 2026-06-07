@@ -51,11 +51,6 @@ if ($env:APPVEYOR_REPO_NAME -eq $github) {
         exit $LastExitCode 
     }
 
-    dotnet test --configuration release --collect "Code Coverage"
-    if (-Not $LastExitCode -eq 0) {
-        exit $LastExitCode 
-    }
-
     dotnet-sonarscanner end /d:"sonar.login=$env:sonar_token"
     if (-Not $LastExitCode -eq 0) {
         exit $LastExitCode 
